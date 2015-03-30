@@ -138,20 +138,27 @@ angular.module('twitchcast.controllers', [])
                 var sig = auth.sig;
                 var token = auth.token;
                 var url = 'http://usher.twitch.tv/vod/' + id.slice(1, id.length) + '?nauth=' + token + '&nauthsig=' + sig;
-                
-                $http.get(url)
+                url = 'http://localhost/web/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
+
+                $http.jsonp(url)
                 .success(function(data) {
-                    var dir = /http?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
-                    var fmt = /NAME="(.*?)"/gi;
-                    
-                    $scope.type = 'vod';
-                    $scope.fmt = data.match(fmt);
-                    $scope.list = data.match(dir);
-                    $scope.title = 'Select Quality';
+                    if(data.m3u == ""){
+                        $scope.error = 'true';
+                        $scope.title = 'Playlist Unavailable';
+                    }
+                    else{
+                        var dir = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
+                        var fmt = /NAME=_(.*?)_/gi;
+                        
+                        $scope.type = 'vod';
+                        $scope.fmt = data.m3u.match(fmt);
+                        $scope.list = data.m3u.match(dir);
+                        $scope.title = 'Select Quality';
+                    }
                 })
                 .error(function() {
                     $scope.error = 'true';
-                    $scope.title = 'Playlist Unavailable';
+                    $scope.title = 'Server Unavailable';
                 });
             })
             .error(function() {
@@ -306,24 +313,31 @@ angular.module('twitchcast.controllers', [])
 .controller('stream', function($scope, $stateParams, $http) {
     var channel = $stateParams.name;
     
-    $http.get('https://api.twitch.tv/api/channels/' + channel + '/access_token')
+    $http.jsonp('http://localhost/web/getstream.php?callback=JSON_CALLBACK&url=https://api.twitch.tv/api/channels/' + channel + '/access_token')
     .success(function(auth) {
         var sig = auth.sig;
         var token = auth.token;
         var url = 'http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8?sig=' + sig + '&token=' + token + '&allow_source=true';
+        url = 'http://localhost/web/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
 
-        $http.get(url)
+        $http.jsonp(url)
         .success(function(data) {
-            var dir = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
-            var fmt = /NAME="(.*?)"/gi;
-            
-            $scope.fmt = data.match(fmt);
-            $scope.list = data.match(dir);
-            $scope.title = 'Select Quality';
+            if(data.m3u == ""){
+                $scope.error = 'true';
+                $scope.title = 'Offline channel';
+            }
+            else{
+                var dir = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
+                var fmt = /NAME=_(.*?)_/gi;
+                
+                $scope.fmt = data.m3u.match(fmt);
+                $scope.list = data.m3u.match(dir);
+                $scope.title = 'Select Quality';
+            }
         })
         .error(function() {
             $scope.error = 'true';
-            $scope.title = 'Offline channel';
+            $scope.title = 'Server Unavailable';
         });
     })
     .error(function() {
