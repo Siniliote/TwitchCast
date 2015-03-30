@@ -78,4 +78,4 @@ MIT
 [play store]:https://play.google.com/store/apps/details?id=twitch.cast
 [folder]:https://drive.google.com/folderview?id=0B2JBNspfO2NifnFGME90YUhvYXNjdXVwZlVwbW0yaUViWWVlRXVleGcyeG9NOEt5RlByaXc&usp=sharing
 [here]:https://drive.google.com/open?id=0B2JBNspfO2NiZ0xodGoycDdKQVU&authuser=0
-[this]:http://cdn.rawgit.com/Arxk/TwitchCast/TCWeb/www/index.html
+[this]:http://rawgit.com/Arxk/TwitchCast/TCWeb/www/index.html
