@@ -14,7 +14,8 @@ Features
 
 Download
 --
-Now you can get it from the [Play Store]
+* Get the android app from the [Play Store].
+* Try an untested Windows 8 Phone build [here].
 
 Screenshots
 --
@@ -22,8 +23,7 @@ You can see the pictures on this Google Drive [folder].
 
 Notes
 --
-* As it is a web/hibrid app, it may work on iOS and any browser with CORS enabled.
-* The old format Broadcasts aren't stored on a single file, but in many parts (~30min each).
+* The old format videos aren't stored on a single file, but in many chunks (~30min each).
 * No chat or subscription support.
 
 Change Log
@@ -73,3 +73,4 @@ MIT
 [twitch]:https://github.com/justintv/twitch-api
 [play store]:https://play.google.com/store/apps/details?id=twitch.cast
 [folder]:https://drive.google.com/folderview?id=0B2JBNspfO2NifnFGME90YUhvYXNjdXVwZlVwbW0yaUViWWVlRXVleGcyeG9NOEt5RlByaXc&usp=sharing
+[here]:https://drive.google.com/open?id=0B2JBNspfO2NiZ0xodGoycDdKQVU&authuser=0
