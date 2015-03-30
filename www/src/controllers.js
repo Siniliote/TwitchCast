@@ -139,7 +139,7 @@ angular.module('twitchcast.controllers', [])
                 var token = auth.token;
                 var url = 'http://usher.twitch.tv/vod/' + id.slice(1, id.length) + '?nauth=' + token + '&nauthsig=' + sig;
                 url = 'http://tcweb.esy.es/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
-                alert(url);
+                
                 $http.jsonp(url)
                 .success(function(data) {
                     if(data.m3u == ""){
