@@ -12,10 +12,11 @@ Features
 * Search for Streams, Games, Channels and Teams (you need the ID).
 * Check the channels you (or any user) are following.
 
-Download
+Download & Online
 --
 * Get the android app from the [Play Store].
 * Try an untested Windows 8 Phone build [here].
+* Use [this] web app (it will get m3u8 format files).
 
 Screenshots
 --
@@ -74,3 +75,4 @@ MIT
 [play store]:https://play.google.com/store/apps/details?id=twitch.cast
 [folder]:https://drive.google.com/folderview?id=0B2JBNspfO2NifnFGME90YUhvYXNjdXVwZlVwbW0yaUViWWVlRXVleGcyeG9NOEt5RlByaXc&usp=sharing
 [here]:https://drive.google.com/open?id=0B2JBNspfO2NiZ0xodGoycDdKQVU&authuser=0
+[this]:http://cdn.rawgit.com/Arxk/TwitchCast/TCWeb/www/index.html
