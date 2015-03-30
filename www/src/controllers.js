@@ -163,7 +163,7 @@ angular.module('twitchcast.controllers', [])
             })
             .error(function() {
                 $scope.error = 'true';
-                $scope.title = 'Service Unavailable';
+                $scope.title = 'Server Unavailable';
             });
         }
         else{
