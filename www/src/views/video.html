@@ -1,7 +1,17 @@
 <ion-view title="title">
     <ion-content has-header="true" has-tabs="true">
         <div class="list list-inset" ng-if="type == 'vod' && error != 'true'">
-            <a ng-repeat="item in list" ng-click="open(item)" href="" class="item item-icon-left">{{ fmt[$index].split('_')[1] }}</a>
+            <div class="item item-divider">Open Video</div>
+            <a ng-repeat="item in list" ng-click="open(item)" href="" class="item item-icon-left">{{ fmt[$index].split('_')[1] }}</a><br/>
+            <div class="item item-divider">
+                Direct Links <p>Copy/Paste to your video player.</p>
+            </div>
+            <div class="list">
+                <label ng-repeat="item in list" class="item item-input item-stacked-label">
+                    <span class="input-label">{{ fmt[$index].split('_')[1] }}</span>
+                    <textarea rows="2" readonly>{{ item }}</textarea>
+                </label>
+            </div><br/>
         </div>
         <div ng-if="type =='chunk' && error != 'true'">
             <div class="list-inset">
