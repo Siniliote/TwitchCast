@@ -16,7 +16,7 @@ Download & Online
 --
 * Get the android app from the [Play Store].
 * Try an untested Windows 8 Phone build [here].
-* Use [this] web app (it will get m3u8 format files).
+* Use [this] website to access online.
 
 Screenshots
 --
