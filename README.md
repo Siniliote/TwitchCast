@@ -24,6 +24,9 @@ You can see the pictures on this Google Drive [folder].
 
 Notes
 --
+* The web app is tested and working fine on Chrome, Firefox and UC Browser (on Android).
+* Please, feel free to send me an email if you have any issues.
+* The Windows Phone 8 build was never tested and it's unlikely to work. If it does PLEASE tell me.
 * The old format videos aren't stored on a single file, but in many chunks (~30min each).
 * No chat or subscription support.
 
