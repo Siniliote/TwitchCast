@@ -138,7 +138,7 @@ angular.module('twitchcast.controllers', [])
                 var sig = auth.sig;
                 var token = auth.token;
                 var url = 'http://usher.twitch.tv/vod/' + id.slice(1, id.length) + '?nauth=' + token + '&nauthsig=' + sig;
-                url = 'http://localhost/web/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
+                url = 'http://tcweb.esy.es/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
 
                 $http.jsonp(url)
                 .success(function(data) {
@@ -313,12 +313,12 @@ angular.module('twitchcast.controllers', [])
 .controller('stream', function($scope, $stateParams, $http) {
     var channel = $stateParams.name;
     
-    $http.jsonp('http://localhost/web/getstream.php?callback=JSON_CALLBACK&url=https://api.twitch.tv/api/channels/' + channel + '/access_token')
+    $http.jsonp('http://tcweb.esy.es/getstream.php?callback=JSON_CALLBACK&url=https://api.twitch.tv/api/channels/' + channel + '/access_token')
     .success(function(auth) {
         var sig = auth.sig;
         var token = auth.token;
         var url = 'http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8?sig=' + sig + '&token=' + token + '&allow_source=true';
-        url = 'http://localhost/web/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
+        url = 'http://tcweb.esy.es/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
 
         $http.jsonp(url)
         .success(function(data) {
