@@ -139,7 +139,7 @@ angular.module('twitchcast.controllers', [])
                 var token = auth.token;
                 var url = 'http://usher.twitch.tv/vod/' + id.slice(1, id.length) + '?nauth=' + token + '&nauthsig=' + sig;
                 url = 'http://tcweb.esy.es/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
-
+                alert(url);
                 $http.jsonp(url)
                 .success(function(data) {
                     if(data.m3u == ""){
@@ -163,7 +163,7 @@ angular.module('twitchcast.controllers', [])
             })
             .error(function() {
                 $scope.error = 'true';
-                $scope.title = 'Server Unavailable';
+                $scope.title = 'Service Unavailable';
             });
         }
         else{
@@ -342,7 +342,7 @@ angular.module('twitchcast.controllers', [])
     })
     .error(function() {
         $scope.error = 'true';
-        $scope.title = 'Service Unavailable';
+        $scope.title = 'Server Unavailable';
     });
     
     $scope.open = function (url) {
