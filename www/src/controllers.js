@@ -1,5 +1,51 @@
 angular.module('twitchcast.controllers', [])
-.controller('more', function($scope, $state) {
+.controller('more', function($scope, $state, $http) {
+    $http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+    var x = 0;
+
+    $scope.authorize = function() {
+        if(x == 0) {
+            window.open('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2Ftcweb.esy.es%2Fgettoken.php&scope=user_read channel_read user_subscriptions');
+        }
+        x++;
+        if(x == 3) {
+            x = 0;
+        }
+    }
+    $scope.token = function() {
+        if(x == 0) {
+            $http.jsonp('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2Ftcweb.esy.es%2Fgettoken.php&scope=user_read channel_read user_subscriptions');
+        }
+        x++;
+        if(x == 3) {
+            x = 0;
+        }
+    }
+    window.response_token = function(data) {
+        window.localStorage.removeItem('access_token');
+        window.localStorage.setItem('access_token', data.access_token);
+        window.localStorage.removeItem('refresh_token');
+        window.localStorage.setItem('refresh_token', data.refresh_token);
+        window.localStorage.removeItem('scope');
+        window.localStorage.setItem('scope', data.scope);
+        if(window.localStorage.getItem('access_token') == null) {
+            $scope.button = "Get Token";
+            $scope.access_token = "no token stored: Authorize the app";
+        }
+        else {
+            $scope.button = "Refresh Token";
+            $scope.access_token = window.localStorage.getItem('access_token');
+        }
+    }
+    if(window.localStorage.getItem('access_token') == null) {
+        $scope.button = "Get Token";
+        $scope.access_token = "no token stored: Authorize and try again";
+    }
+    else {
+        $scope.button = "Refresh Token";
+        $scope.access_token = window.localStorage.getItem('access_token');
+    }
+
     $scope.save = function (username, check) {
         if(check == true) {
             window.localStorage.removeItem('username');
@@ -17,7 +63,7 @@ angular.module('twitchcast.controllers', [])
     }
     $scope.slide = function (index) {
         if(index == 0) {
-            $scope.title = 'Following';
+            $scope.title = 'Login';
         }
         else if(index == 1) {
             $scope.title = 'Search';
@@ -123,17 +169,32 @@ angular.module('twitchcast.controllers', [])
     };
     $scope.reload();
 })
-.controller('channel', function($scope, $stateParams) {
+.controller('channel', function($scope, $stateParams, $http) {
     $scope.title = $stateParams.title;
     $scope.name = $stateParams.name;
+
+    $http.jsonp('https://api.twitch.tv/kraken/streams/' + $scope.name + '?callback=JSON_CALLBACK')
+    .success(function(data) {
+        if(data.stream != null) {
+            $scope.online = 'true';
+        }
+    })
+    .error(function() {
+        $scope.online = 'true';
+    });
 })
 .controller('video', function($scope, $stateParams, $http) { 
     $http.jsonp('https://api.twitch.tv/api/videos/' + $stateParams.id + '?callback=JSON_CALLBACK')
     .success(function(data) {
         if(data.api_id.slice(0, 1) == 'v'){
             var id = data.api_id;
+            var auth = "";
+
+            if(window.localStorage.getItem('access_token') != null) {
+                auth = '&oauth_token=' + window.localStorage.getItem('access_token');
+            }
             
-            $http.jsonp('https://api.twitch.tv/api/vods/' + id.slice(1, id.length) + '/access_token?callback=JSON_CALLBACK')
+            $http.jsonp('https://api.twitch.tv/api/vods/' + id.slice(1, id.length) + '/access_token?callback=JSON_CALLBACK' + auth)
             .success(function(auth) {
                 var sig = auth.sig;
                 var token = auth.token;
@@ -319,7 +380,7 @@ angular.module('twitchcast.controllers', [])
         var token = auth.token;
         var url = 'http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8?sig=' + sig + '&token=' + token + '&allow_source=true';
         url = 'http://tcweb.esy.es/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
-
+        
         $http.jsonp(url)
         .success(function(data) {
             if(data.m3u == ""){
@@ -365,6 +426,7 @@ angular.module('twitchcast.controllers', [])
             $scope.list = data.teams;
             $scope.next = data._links.next;
             $scope.prev = data._links.prev;
+            $scope.title = 'Teams';
         })
         .error(function() {
             $scope.error = 'true';
