@@ -31,3 +31,6 @@ img{border-radius:5px}
 .right{margin-right:20px;right:0;position:absolute}
 .bottom{color:#666;font-size:75%;position:absolute;bottom:0;cursor:pointer}
 .about h2{color:#333}
+.tc-purple{color:#fff;background:#6441a5}
+.tc-purple:hover{color:#fff;background:#6441a5}
+.note{color:#666;font-size:75%;}
