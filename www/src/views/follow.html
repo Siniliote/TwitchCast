@@ -1,0 +1,46 @@
+<style>
+.wide{cursor:pointer}
+.wide,.wide .item-content{padding-left:145px}
+.wide .item-content>.item-image,.wide .item-content>img:first-child,.wide>.item-image,.wide>img:first-child{top:10px;max-width:120px}
+.wide,.wide .item-content{min-height: 95px}
+</style>
+<ion-view title="title">
+    <ion-content has-header="true" has-tabs="true">
+         <div class="tabs period">
+            <a class="tab-item" href="#/nav/follow/all">All</a>
+            <a class="tab-item" href="#/nav/follow/streams">Live</a>
+            <a class="tab-item" href="#/nav/follow/videos">Videos</a>
+        </div>
+        <ion-list ng-if="ref == 'f'" class="data">
+            <ion-item class="item item-thumbnail-left" ng-repeat="item in list" type="item-text-wrap" href="#/nav/channel/f/{{item.channel.name}}/{{item.channel.display_name}}/f">
+                <img ng-if="item.channel.logo != null" src={{item.channel.logo}}>
+                <img ng-if="item.channel.logo == null" src='img/twitch.png'>
+                <h2>{{item.channel.display_name}}</h2>
+                <p>Views: {{item.channel.views}}</p>
+                <p>Followers: {{item.channel.followers}}</p>
+            </ion-item>
+        </ion-list>
+        <ion-list ng-if="ref == 's'" class="data">
+            <ion-item class="item item-thumbnail-left wide" ng-repeat="item in list" type="item-text-wrap" href="#/nav/stream/f/{{item.channel.name}}">
+                <img src={{item.preview.medium}}>
+                <h2>{{item.channel.status}}</h2>
+                <p>Viewers: {{item.viewers}}</p>
+                <p>{{item.channel.display_name}} {{item.channel.primary_team_display_name}}</p>
+            </ion-item>
+        </ion-list>
+        <ion-list ng-if="ref == 'v'" class="data">
+            <ion-item class="item item-thumbnail-left wide" ng-repeat="item in list" type="item-text-wrap" href="#/nav/video/f/{{item._id}}">
+                <img src={{item.preview}}>
+                <h2>{{item.title}}</h2>
+                <p>{{item.channel.display_name}}</p>
+                <p ng-if="top == 'true' || item.description == null && item.game != null">Game: {{item.game}}</p>
+                <p ng-if="item.description != null">Description: {{item.description}}</p>
+                <p ng-if="top != 'true' && item.length < 60">Length: {{item.length}} sec</p>
+                <p ng-if="top != 'true' && item.length > 60 && item.length/60 < 60">Lenght: {{item.length / 60 | number:0}} min</p>
+                <p ng-if="top != 'true' && item.length/60 > 60">Length: {{item.length / 3600 | number:0}} hrs</p>
+            </ion-item>
+        </ion-list>
+        <div ng-include="'src/views/error.html'"></div>
+        <div ng-if="ref != 't' && total > 15" ng-include="'src/views/pagination.html'"></div>
+    </ion-content>
+</ion-view>

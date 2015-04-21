@@ -1,25 +1,15 @@
 angular.module('twitchcast', [
     'ionic',
     'twitchcast.services',
-    'twitchcast.controllers',
-    'angulartics',
-    'angulartics.google.analytics'
+    'twitchcast.controllers'
 ])
-.config(function($stateProvider, $urlRouterProvider, $analyticsProvider) {
+.config(function($stateProvider, $urlRouterProvider) {
     $stateProvider
     .state('nav', {
         url: '/nav',
         abstract: true,
-        templateUrl: 'src/views/navigation.html'
-    })
-    .state('nav.more', {
-        url: '/more',
-        views: {
-            'search-tab': {
-                templateUrl: 'src/views/more.html',
-                controller: 'more'
-            }
-        }
+        templateUrl: 'src/views/navigation.html',
+        controller: 'nav'
     })
     .state('nav.games', {
         url: '/games',
@@ -39,8 +29,8 @@ angular.module('twitchcast', [
             }
         }
     })
-    .state('nav.channel', {
-        url: '/channel/:name/:title',
+    .state('nav.channel-search', {
+        url: '/channel/s/:name/:title/:ref',
         views: {
             'search-tab': {
                 templateUrl: 'src/views/channel.html',
@@ -48,8 +38,35 @@ angular.module('twitchcast', [
             }
         }
     })
-    .state('nav.videos-highlights', {
-        url: '/highlights/:name/:title',
+    .state('nav.channel-follow', {
+        url: '/channel/f/:name/:title/:ref',
+        views: {
+            'follow-tab': {
+                templateUrl: 'src/views/channel.html',
+                controller: 'channel'
+            }
+        }
+    })
+    .state('nav.follow', {
+        url: '/follow/:type',
+        views: {
+            'follow-tab': {
+                templateUrl: 'src/views/follow.html',
+                controller: 'follow'
+            }
+        }
+    })
+    .state('nav.videos-highlights-follow', {
+        url: '/highlights/f/:name/:title/:ref',
+        views: {
+            'follow-tab': {
+                templateUrl: 'src/views/videos.html',
+                controller: 'highlights'
+            }
+        }
+    })
+    .state('nav.videos-highlights-search', {
+        url: '/highlights/s/:name/:title/:ref',
         views: {
             'search-tab': {
                 templateUrl: 'src/views/videos.html',
@@ -57,8 +74,17 @@ angular.module('twitchcast', [
             }
         }
     })
-    .state('nav.videos-broadcasts', {
-        url: '/broadcasts/:name/:title',
+    .state('nav.videos-broadcasts-follow', {
+        url: '/broadcasts/f/:name/:title/:ref',
+        views: {
+            'follow-tab': {
+                templateUrl: 'src/views/videos.html',
+                controller: 'broadcasts'
+            }
+        }
+    })
+    .state('nav.videos-broadcasts-search', {
+        url: '/broadcasts/s/:name/:title/:ref',
         views: {
             'search-tab': {
                 templateUrl: 'src/views/videos.html',
@@ -88,6 +114,15 @@ angular.module('twitchcast', [
         url: '/stream/l/:name',
         views: {
             'streams-tab': {
+                templateUrl: 'src/views/stream.html',
+                controller: 'stream'
+            }
+        }
+    })
+    .state('nav.stream-follow', {
+        url: '/stream/f/:name',
+        views: {
+            'follow-tab': {
                 templateUrl: 'src/views/stream.html',
                 controller: 'stream'
             }
@@ -124,6 +159,15 @@ angular.module('twitchcast', [
         url: '/video/s/:id',
         views: {
             'search-tab': {
+                templateUrl: 'src/views/video.html',
+                controller: 'video'
+            }
+        }
+    })
+    .state('nav.video-follow', {
+        url: '/video/f/:id',
+        views: {
+            'follow-tab': {
                 templateUrl: 'src/views/video.html',
                 controller: 'video'
             }
@@ -200,7 +244,8 @@ angular.module('twitchcast', [
                 controller: 'search'
             }
         }
-    }).state('nav.search-team', {
+    })
+    .state('nav.search-team', {
         url: '/teams/:team/:name',
         views: {
             'search-tab': {
