@@ -8,6 +8,10 @@
 .item-checkbox{color:#666}
 .checkbox input:before{border:1px solid #666}
 .checkbox input:checked:before{background:#6441a5}
+.about h2{color:#333}
+.tc-purple{color:#fff;background:#6441a5}
+.tc-purple:hover{color:#fff;background:#6441a5}
+.rel{background:#fff;color:#6441a5}
 
 /* GENERAL */
 p{margin:0}
@@ -18,7 +22,7 @@ img{border-radius:5px}
 .scroll-bar-v{right:0}
 .scroll{min-height:99.907%}
 .tabs-icon-bottom .tab-item{line-height:33px}
-.tabs-icon-bottom{height:34px;margin-bottom:-0.015625px}
+.tabs-icon-bottom{height:34px}
 .slider-slides{padding-top:30px;position:absolute}
 .slider-pager{top:15px;z-index:-999}
 .slider{position:inherit}
@@ -30,7 +34,5 @@ img{border-radius:5px}
 .left{margin-left:20px;left:0;position:absolute}
 .right{margin-right:20px;right:0;position:absolute}
 .bottom{color:#666;font-size:75%;position:absolute;bottom:0;cursor:pointer}
-.about h2{color:#333}
-.tc-purple{color:#fff;background:#6441a5}
-.tc-purple:hover{color:#fff;background:#6441a5}
 .note{color:#666;font-size:75%;}
+.rel{position:relative;border:none}

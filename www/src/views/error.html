@@ -1,5 +1,5 @@
 <div ng-if="error == 'true'" class="card">
-    <div class="item item-text-wrap">Error connecting to Twitch servers. Service might be down or the video it's restricted (login). Also check that you are using http (not https).<br>Please try again.</div>
+    <div class="item item-text-wrap">{{message}}</div>
 </div>
 <div ng-if="list.length <= 0" class="card">
     <div class="item item-text-wrap">No items to show.</div>

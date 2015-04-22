@@ -1,25 +1,23 @@
 angular.module('twitchcast.controllers', [])
+.controller('nav', function($scope, $rootScope, URLservice) {
+    URLservice.update();
+})
 .controller('more', function($scope, $state, $http) {
     $http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
     var x = 0;
-
     $scope.authorize = function() {
-        if(x == 0) {
+        if(x == 0)
             window.open('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2Ftcweb.esy.es%2Fgettoken.php&scope=user_read channel_read user_subscriptions');
-        }
         x++;
-        if(x == 3) {
+        if(x == 3)
             x = 0;
-        }
     }
     $scope.token = function() {
-        if(x == 0) {
+        if(x == 0)
             $http.jsonp('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2Ftcweb.esy.es%2Fgettoken.php&scope=user_read channel_read user_subscriptions');
-        }
         x++;
-        if(x == 3) {
+        if(x == 3)
             x = 0;
-        }
     }
     window.response_token = function(data) {
         window.localStorage.removeItem('access_token');
@@ -35,6 +33,11 @@ angular.module('twitchcast.controllers', [])
         else {
             $scope.button = "Refresh Token";
             $scope.access_token = window.localStorage.getItem('access_token');
+            $http.jsonp('https://api.twitch.tv/kraken/user?oauth_token=' + window.localStorage.getItem('access_token') + '&callback=JSON_CALLBACK')
+            .success(function(data){
+                window.localStorage.removeItem('username');
+                window.localStorage.setItem('username', data.name);
+            });
         }
     }
     if(window.localStorage.getItem('access_token') == null) {
@@ -46,13 +49,21 @@ angular.module('twitchcast.controllers', [])
         $scope.access_token = window.localStorage.getItem('access_token');
     }
 
-    $scope.save = function (username, check) {
-        if(check == true) {
-            window.localStorage.removeItem('username');
-            window.localStorage.setItem('username', username);
-        }
+    $scope.search = function (query, input) {
+        if(query == 't' && (input == null || input.length == 0))
+            $state.go('nav.search-teams');
+        else if(query == 't')
+            $state.go('nav.search-team', { team: input, name: input });
+        else if(query == 's')
+            $state.go('nav.search-streams', { input: input, type: 'streams' });
+        else if(query == 'c')
+            $state.go('nav.search-channels', { input: input, type: 'channels' });
+        else if(query == 'f')
+            $state.go('nav.search-follow', { username: input });
+        else
+            $state.go('nav.search-games', { input: input, type: 'games' });  
     };
-    $scope.username = window.localStorage.getItem('username');
+    $scope.query = "c";
 
     $scope.open = function (url) {
         window.open(url, '_system');
@@ -62,33 +73,26 @@ angular.module('twitchcast.controllers', [])
         $scope.$broadcast('slideBox.setSlide', index);
     }
     $scope.slide = function (index) {
-        if(index == 0) {
+        if(index == 0)
+            $scope.title = 'More';
+        else if(index == 1)
+            $scope.title = 'Search';
+        else if(index == 2)
             $scope.title = 'Login';
-        }
-        else if(index == 1) {
+        else
             $scope.title = 'Search';
-        }
-        else if(index == 2) {
-            $scope.title = 'Teams';
-        }
-        else {
-            $scope.title = 'Search';
-        }
     };
     $scope.slide();
     $scope.default = 1;
 })
 .controller('games', function($scope, $stateParams, $http, $ionicScrollDelegate, URLservice) {
     $scope.reload = function (offset) {
-        if(offset == 'next'){
+        if(offset == 'next')
             var url = $scope.next + '&callback=JSON_CALLBACK';
-        }
-        if(offset == 'prev'){
+        if(offset == 'prev')
             var url = $scope.prev + '&callback=JSON_CALLBACK';
-        }
-        if(offset == null) {
+        if(offset == null)
             var url = URLservice.games($stateParams.name);
-        }
         $http.jsonp(url)
         .success(function(data) {
             $scope.list = data.top;
@@ -98,6 +102,7 @@ angular.module('twitchcast.controllers', [])
         })
         .error(function() {
             $scope.error = 'true';
+            $scope.message = 'Error connecting to Twitch servers: Try again';
             $scope.title = 'Service Unavailable';
         });
         $scope.top = 'true';
@@ -107,23 +112,92 @@ angular.module('twitchcast.controllers', [])
 })
 .controller('game', function($scope, $stateParams) {
     $scope.title = $stateParams.name;
+    $scope.ref = $stateParams.ref;
+})
+.controller('follow', function($scope, $stateParams, $state, $http, $ionicScrollDelegate, URLservice) {
+    $scope.reload = function (offset) {
+        var auth = window.localStorage.getItem('access_token');
+        var username = window.localStorage.getItem('username');
+
+        if(auth != null) {
+            auth = '&oauth_token=' + auth;
+
+            if(offset == 'next')
+                var url = $scope.next + '&oauth_token=' + auth + '&callback=JSON_CALLBACK';
+            if(offset == 'prev')
+                var url = $scope.prev + '&oauth_token=' + auth + '&callback=JSON_CALLBACK';
+            if(offset == null) {
+                if($stateParams.type == 'videos')
+                    var url = URLservice.followvod(auth);
+                else if($stateParams.type == 'streams')
+                    var url = URLservice.followstr(auth);
+                else
+                    if(username != null)
+                        var url = URLservice.follow(username) + '&sortby=last_broadcast';
+                    else
+                        var url = null;
+            }
+            if(url != null) {
+                $http.jsonp(url)
+                .success(function(data) {
+                    if(data.error == null) {
+                        if($stateParams.type == 'all') {
+                            $scope.list = data.follows;
+                            $scope.title = 'Followed (all): ' + data._total;
+                            $scope.ref = 'f';
+                        }
+                        if($stateParams.type == 'streams') {
+                            $scope.list = data.streams;
+                            $scope.title = 'Followed (live): ' + data._total;
+                            $scope.ref = 's';
+                        }
+                        if($stateParams.type == 'videos') {
+                            $scope.list = data.videos; 
+                            $scope.title = 'Followed (videos)';
+                            $scope.ref = 'v';
+                        }
+                        $scope.next = data._links.next;
+                        $scope.prev = data._links.prev;
+                        $scope.total = data._total;
+                    }
+                    else {
+                        $scope.error = 'true';
+                        $scope.message = data.message + ': Refresh token';
+                        $scope.title = data.error;
+                    }
+                })
+                .error(function() {
+                    $scope.error = 'true';
+                    $scope.message = 'Error connecting to Twitch servers: Try again';
+                    $scope.title = 'Service Unavailable';
+                });
+                $ionicScrollDelegate.scrollTop();
+            }
+            else {
+                $scope.error = 'true';
+                $scope.message = 'Missing username: Refresh token';
+                $scope.title = 'Forbidden';
+            }
+        }
+        else {
+            $scope.error = 'true';
+            $scope.message = 'Authorize the app and get a token';
+            $scope.title = 'Forbidden';
+        }
+    };
+    $scope.reload();
 })
 .controller('search', function($scope, $stateParams, $http, $ionicScrollDelegate, URLservice) {  
     $scope.reload = function (offset) {
-        if(offset == 'next') {
+        if(offset == 'next')
             var url = $scope.next + '&callback=JSON_CALLBACK';
-        }
-        if(offset == 'prev') {
+        if(offset == 'prev')
             var url = $scope.prev + '&callback=JSON_CALLBACK';
-        }
-        if(offset == null) {
-            if($stateParams.username) {
+        if(offset == null)
+            if($stateParams.username)
                 var url = URLservice.follow($stateParams.username) + '&sortby=last_broadcast';
-            }
-            else {
+            else
                 var url = URLservice.search($stateParams.input, $stateParams.type);
-            }
-        }
         $http.jsonp(url)
         .success(function(data) {
             if(data.error == null) {
@@ -154,15 +228,17 @@ angular.module('twitchcast.controllers', [])
                 }
                 $scope.next = data._links.next;
                 $scope.prev = data._links.prev;
+                $scope.total = data._total;console.log(data._total);
             }
             else {
-                $scope.list = '';
+                $scope.error = 'true';
                 $scope.title = data.error;
-                $scope.top = 'true';
+                $scope.message = data.message;
             }
         })
         .error(function() {
             $scope.error = 'true';
+            $scope.message = 'Error connecting to Twitch servers: Try again';
             $scope.title = 'Service Unavailable';
         });
         $ionicScrollDelegate.scrollTop();
@@ -172,27 +248,27 @@ angular.module('twitchcast.controllers', [])
 .controller('channel', function($scope, $stateParams, $http) {
     $scope.title = $stateParams.title;
     $scope.name = $stateParams.name;
+    $scope.ref = $stateParams.ref;
 
     $http.jsonp('https://api.twitch.tv/kraken/streams/' + $scope.name + '?callback=JSON_CALLBACK')
     .success(function(data) {
-        if(data.stream != null) {
+        if(data.stream != null)
             $scope.online = 'true';
-        }
     })
     .error(function() {
         $scope.online = 'true';
     });
 })
 .controller('video', function($scope, $stateParams, $http) { 
+    console.log('https://api.twitch.tv/api/videos/' + $stateParams.id + '?callback=JSON_CALLBACK');
     $http.jsonp('https://api.twitch.tv/api/videos/' + $stateParams.id + '?callback=JSON_CALLBACK')
     .success(function(data) {
-        if(data.api_id.slice(0, 1) == 'v'){
+        if(data.api_id.slice(0, 1) != 'c') {
             var id = data.api_id;
-            var auth = "";
+            var auth = '';
 
-            if(window.localStorage.getItem('access_token') != null) {
+            if(window.localStorage.getItem('access_token') != null)
                 auth = '&oauth_token=' + window.localStorage.getItem('access_token');
-            }
             
             $http.jsonp('https://api.twitch.tv/api/vods/' + id.slice(1, id.length) + '/access_token?callback=JSON_CALLBACK' + auth)
             .success(function(auth) {
@@ -203,11 +279,12 @@ angular.module('twitchcast.controllers', [])
                 
                 $http.jsonp(url)
                 .success(function(data) {
-                    if(data.m3u == ""){
+                    if(data.m3u == "") {
                         $scope.error = 'true';
+                        $scope.message = "The playlist is empty";
                         $scope.title = 'Playlist Unavailable';
                     }
-                    else{
+                    else {
                         var dir = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
                         var fmt = /NAME=_(.*?)_/gi;
                         
@@ -219,26 +296,36 @@ angular.module('twitchcast.controllers', [])
                 })
                 .error(function() {
                     $scope.error = 'true';
-                    $scope.title = 'Server Unavailable';
+                    $scope.message = 'The video is restricted: You may need to subscribe';
+                    $scope.title = 'Video Unavailable';
                 });
             })
             .error(function() {
                 $scope.error = 'true';
-                $scope.title = 'Service Unavailable';
+                $scope.message = 'The video is restricted: You may need to subscribe';
+                $scope.title = 'Video Unavailable';
             });
         }
-        else{
-            $scope.type = 'chunk';
-            $scope._live = data.chunks.live;
-            $scope._720p = data.chunks["720p"];
-            $scope._480p = data.chunks["480p"];
-            $scope._360p = data.chunks["360p"];
-            $scope._240p = data.chunks["240p"];
-            $scope.title = 'Select Quality';
+        else {
+            if(data.chunks.live.length > 0) {
+                $scope.type = 'chunk';
+                $scope._live = data.chunks.live;
+                $scope._720p = data.chunks["720p"];
+                $scope._480p = data.chunks["480p"];
+                $scope._360p = data.chunks["360p"];
+                $scope._240p = data.chunks["240p"];
+                $scope.title = 'Select Quality';
+            }
+            else {
+                $scope.error = 'true';
+                $scope.message = 'The video is restricted: You may need to subscribe';
+                $scope.title = 'Video Unavailable';
+            }
         }
     })
     .error(function() {
         $scope.error = 'true';
+        $scope.message = 'Error connecting to Twitch servers: Try again';
         $scope.title = 'Service Unavailable';
     });
     $scope.quality = '5';
@@ -249,25 +336,24 @@ angular.module('twitchcast.controllers', [])
 })
 .controller('highlights', function($scope, $stateParams, $http, $ionicScrollDelegate, URLservice) {
     $scope.reload = function (offset) {
-        if(offset == 'next'){
+        if(offset == 'next')
             var url = $scope.next + '&callback=JSON_CALLBACK';
-        }
-        if(offset == 'prev'){
+        if(offset == 'prev')
             var url = $scope.prev + '&callback=JSON_CALLBACK';
-        }
-        if(offset == null) {
+        if(offset == null)
             var url = URLservice.highlights($stateParams.name);
-        }
         $http.jsonp(url)
         .success(function(data) {
             $scope.list = data.videos;
             $scope.next = data._links.next;
             $scope.prev = data._links.prev;
+            $scope.total = data._total;
             $scope.title = $stateParams.title + ' Highlights';
-            $scope.ref = 's';
+            $scope.ref = $stateParams.ref;
         })
         .error(function() {
             $scope.error = 'true';
+            $scope.message = 'Error connecting to Twitch servers: Try again';
             $scope.title = 'Service Unavailable';
         });
         $ionicScrollDelegate.scrollTop();
@@ -276,25 +362,24 @@ angular.module('twitchcast.controllers', [])
 })
 .controller('broadcasts', function($scope, $stateParams, $http, $ionicScrollDelegate, URLservice) {
     $scope.reload = function (offset) {
-        if(offset == 'next'){
+        if(offset == 'next')
             var url = $scope.next + '&callback=JSON_CALLBACK';
-        }
-        if(offset == 'prev'){
+        if(offset == 'prev')
             var url = $scope.prev + '&callback=JSON_CALLBACK';
-        }
-        if(offset == null) {
+        if(offset == null)
             var url = URLservice.broadcasts($stateParams.name);
-        }
         $http.jsonp(url)
         .success(function(data) {
             $scope.list = data.videos;
             $scope.next = data._links.next;
             $scope.prev = data._links.prev;
+            $scope.total = data._total;
             $scope.title = $stateParams.title + ' Past Broadcasts';
-            $scope.ref = 's';
+            $scope.ref = $stateParams.ref;
         })
         .error(function() {
             $scope.error = 'true';
+            $scope.message = 'Error connecting to Twitch servers: Try again';
             $scope.title = 'Service Unavailable';
         });
         $ionicScrollDelegate.scrollTop();
@@ -303,20 +388,18 @@ angular.module('twitchcast.controllers', [])
 })
 .controller('videos', function($scope, $stateParams, $http, $ionicScrollDelegate, URLservice) {
     $scope.reload = function (offset) {
-        if(offset == 'next'){
+        if(offset == 'next')
             var url = $scope.next + '&callback=JSON_CALLBACK';
-        }
-        if(offset == 'prev'){
+        if(offset == 'prev')
             var url = $scope.prev + '&callback=JSON_CALLBACK';
-        }
-        if(offset == null) {
+        if(offset == null)
             var url = URLservice.videos($stateParams.name, $stateParams.period);
-        }
         $http.jsonp(url)
         .success(function(data) {
             $scope.list = data.videos;
             $scope.next = data._links.next;
             $scope.prev = data._links.prev;
+            $scope.total = data._total;
             if($stateParams.name){
                 $scope.title = $stateParams.name + ' Videos (' + $stateParams.period + ')';
                 $scope.ref = 'g';
@@ -329,6 +412,7 @@ angular.module('twitchcast.controllers', [])
         })
         .error(function() {
             $scope.error = 'true';
+            $scope.message = 'Error connecting to Twitch servers: Try again';
             $scope.title = 'Service Unavailable';
         });
         $scope.game = $stateParams.name;
@@ -339,32 +423,31 @@ angular.module('twitchcast.controllers', [])
 })
 .controller('streams', function($scope, $stateParams, $http, $ionicScrollDelegate, URLservice) {
     $scope.reload = function (offset) {
-        if(offset == 'next'){
+        if(offset == 'next')
             var url = $scope.next + '&callback=JSON_CALLBACK';
-        }
-        if(offset == 'prev'){
+        if(offset == 'prev')
             var url = $scope.prev + '&callback=JSON_CALLBACK';
-        }
-        if(offset == null) {
+        if(offset == null)
             var url = URLservice.streams($stateParams.name);
-        }
         $http.jsonp(url)
         .success(function(data) {
             $scope.list = data.streams;
             $scope.next = data._links.next;
             $scope.prev = data._links.prev;
+            $scope.total = data._total;
             
-            if($stateParams.name){
+            if($stateParams.name) {
                 $scope.title = $stateParams.name + ' Live Channels';
                 $scope.ref = 'g';
             }
-            else{
+            else {
                 $scope.title = 'Live Channels (' + data._total + ')';
                 $scope.ref = 'l';
             }
         })
         .error(function() {
             $scope.error = 'true';
+            $scope.message = 'Error connecting to Twitch servers: Try again';
             $scope.title = 'Service Unavailable';
         });
         $ionicScrollDelegate.scrollTop();
@@ -383,8 +466,9 @@ angular.module('twitchcast.controllers', [])
         
         $http.jsonp(url)
         .success(function(data) {
-            if(data.m3u == ""){
+            if(data.m3u == "") {
                 $scope.error = 'true';
+                $scope.message = 'The playlist is empty'
                 $scope.title = 'Offline channel';
             }
             else{
@@ -398,11 +482,13 @@ angular.module('twitchcast.controllers', [])
         })
         .error(function() {
             $scope.error = 'true';
+            $scope.message = "Error connecting to the proxy server: Check that your conection is NOT HTTPS";
             $scope.title = 'Server Unavailable';
         });
     })
     .error(function() {
         $scope.error = 'true';
+        $scope.message = "Error connecting to the proxy server: Check that your conection is NOT HTTPS";
         $scope.title = 'Server Unavailable';
     });
     
@@ -412,24 +498,23 @@ angular.module('twitchcast.controllers', [])
 })
 .controller('teams', function($scope, $stateParams, $http, $ionicScrollDelegate, URLservice) {
     $scope.reload = function (offset) {
-        if(offset == 'next'){
+        if(offset == 'next')
             var url = $scope.next + '&callback=JSON_CALLBACK';
-        }
-        if(offset == 'prev'){
+        if(offset == 'prev')
             var url = $scope.prev + '&callback=JSON_CALLBACK';
-        }
-        if(offset == null) {
+        if(offset == null)
             var url = URLservice.teams();
-        }
         $http.jsonp(url)
         .success(function(data) {
             $scope.list = data.teams;
             $scope.next = data._links.next;
             $scope.prev = data._links.prev;
+            $scope.total = data._total;
             $scope.title = 'Teams';
         })
         .error(function() {
             $scope.error = 'true';
+            $scope.message = 'Error connecting to Twitch servers: Try again';
             $scope.title = 'Service Unavailable';
         });
         $ionicScrollDelegate.scrollTop();
@@ -437,7 +522,7 @@ angular.module('twitchcast.controllers', [])
     $scope.reload();
 })
 .controller('team', function($scope, $stateParams, $http) {
-    $http.jsonp('http://api.twitch.tv/api/team/' + $stateParams.team + '/live_channels.json?callback=JSON_CALLBACK')
+    $http.jsonp('http://tcweb.esy.es/getstream.php?callback=JSON_CALLBACK&url=http://api.twitch.tv/api/team/' + $stateParams.team + '/live_channels.json')
     .success(function(data) {
         $scope.list = data.channels;
         $scope.title = $stateParams.name + ' live channels';
@@ -445,6 +530,6 @@ angular.module('twitchcast.controllers', [])
     })
     .error(function() {
         $scope.list = '';
-        $scope.title = 'Not found';
+        $scope.title = 'Not Found';
     });
 });

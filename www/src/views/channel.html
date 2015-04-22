@@ -1,9 +1,9 @@
 <ion-view title="title">
     <ion-content has-header="true" has-tabs="true">
         <div class="list list-inset">
-            <a href="#/nav/stream/s/{{name}}" class="item item-icon-left">Live Stream</a>
-            <a href="#/nav/broadcasts/{{name}}/{{title}}" class="item item-icon-left">Past Broadcasts</a>
-            <a href="#/nav/highlights/{{name}}/{{title}}" class="item item-icon-left">Highlights</a>
+            <a href="#/nav/stream/{{ref}}/{{name}}" ng-if="online == 'true'" class="item item-icon-left">Live Stream</a>
+            <a href="#/nav/broadcasts/{{ref}}/{{name}}/{{title}}/{{ref}}" class="item item-icon-left">Past Broadcasts</a>
+            <a href="#/nav/highlights/{{ref}}/{{name}}/{{title}}/{{ref}}" class="item item-icon-left">Highlights</a>
         </div>
     </ion-content>
 </ion-view>
