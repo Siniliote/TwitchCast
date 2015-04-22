@@ -446,13 +446,13 @@ angular.module('twitchcast.controllers', [])
 .controller('stream', function($scope, $stateParams, $http) {
     var channel = $stateParams.name;
     
-    $http.jsonp('http://tcweb.esy.es/getstream.php?callback=JSON_CALLBACK&url=https://api.twitch.tv/api/channels/' + channel + '/access_token')
+    $http.get('https://api.twitch.tv/api/channels/' + channel + '/access_token')
     .success(function(auth) {
         var sig = auth.sig;
         var token = auth.token;
-         var url = 'http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8?sig=' + sig + '&token=' + token + '&allow_source=true';
+        var url = 'http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8?sig=' + sig + '&token=' + token + '&allow_source=true';
         
-        $http.jsonp(url)
+        $http.get(url)
         .success(function(data) {
             var dir = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
             var fmt = /NAME="(.*?)"/gi;
@@ -463,16 +463,15 @@ angular.module('twitchcast.controllers', [])
         })
         .error(function() {
             $scope.error = 'true';
-            $scope.message = 'Error connecting to the Twitch servers: Try again';
-            $scope.title = 'Server Unavailable';
+            $scope.message = 'Error connecting to Twitch servers: Try again';
+            $scope.title = 'Offline channel';
         });
     })
     .error(function() {
         $scope.error = 'true';
-        $scope.message = 'Error connecting to the Twitch servers: Try again';
-        $scope.title = 'Server Unavailable';
+        $scope.message = 'Error connecting to Twitch servers: Try again';
+        $scope.title = 'Service Unavailable';
     });
-    
     $scope.open = function (url) {
         window.open(url, '_system');
     };
@@ -503,7 +502,7 @@ angular.module('twitchcast.controllers', [])
     $scope.reload();
 })
 .controller('team', function($scope, $stateParams, $http) {
-    $http.jsonp('http://tcweb.esy.es/getstream.php?callback=JSON_CALLBACK&url=http://api.twitch.tv/api/team/' + $stateParams.team + '/live_channels.json')
+    $http.get('http://api.twitch.tv/api/team/' + $stateParams.team + '/live_channels.json')
     .success(function(data) {
         $scope.list = data.channels;
         $scope.title = $stateParams.name + ' live channels';
