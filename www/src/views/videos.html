@@ -28,6 +28,6 @@
             </ion-item>
         </ion-list>
         <div ng-include="'src/views/error.html'"></div>
-        <div ng-if="total > 15" ng-include="'src/views/pagination.html'"></div>
+        <div ng-if="total > 15 || top == 'true'" ng-include="'src/views/pagination.html'"></div>
     </ion-content>
 </ion-view>
