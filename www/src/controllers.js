@@ -223,7 +223,7 @@ angular.module('twitchcast.controllers', [])
                 }
                 $scope.next = data._links.next;
                 $scope.prev = data._links.prev;
-                $scope.total = data._total;console.log(data._total);
+                $scope.total = data._total;
             }
             else {
                 $scope.error = 'true';
@@ -260,42 +260,7 @@ angular.module('twitchcast.controllers', [])
 .controller('video', function($scope, $stateParams, $http) { 
     $http.jsonp('https://api.twitch.tv/api/videos/' + $stateParams.id + '?callback=JSON_CALLBACK')
     .success(function(data) {
-        if(data.api_id.slice(0, 1) != 'c') {
-            var id = data.api_id;
-            var auth = '';
-
-            if(window.localStorage.getItem('access_token') != null)
-                auth = '&oauth_token=' + window.localStorage.getItem('access_token');
-            
-            $http.jsonp('https://api.twitch.tv/api/vods/' + id.slice(1, id.length) + '/access_token?callback=JSON_CALLBACK' + auth)
-            .success(function(auth) {
-                var sig = auth.sig;
-                var token = auth.token;
-                var url = 'http://usher.twitch.tv/vod/' + id.slice(1, id.length) + '?nauth=' + token + '&nauthsig=' + sig;
-                
-                $http.get(url)
-                .success(function(data) {
-                    var dir = /http?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
-                    var fmt = /NAME="(.*?)"/gi;
-                    
-                    $scope.type = 'vod';
-                    $scope.fmt = data.match(fmt);
-                    $scope.list = data.match(dir);
-                    $scope.title = 'Select Quality';
-                })
-                .error(function() {
-                    $scope.error = 'true';
-                    $scope.message = 'The video is restricted: You may need to subscribe';
-                    $scope.title = 'Video Unavailable';
-                });
-            })
-            .error(function() {
-                $scope.error = 'true';
-                $scope.message = 'The video is restricted: You may need to subscribe';
-                $scope.title = 'Video Unavailable';
-            });
-        }
-        else {
+        if(typeof data.chunks.live !== 'undefined') {
             if(data.chunks.live.length > 0) {
                 $scope.type = 'chunk';
                 $scope._live = data.chunks.live;
@@ -306,10 +271,11 @@ angular.module('twitchcast.controllers', [])
                 $scope.title = 'Select Quality';
             }
             else {
-                $scope.error = 'true';
-                $scope.message = 'The video is restricted: You may need to subscribe';
-                $scope.title = 'Video Unavailable';
+                checkvideo(data);
             }
+        }
+        else {
+            checkvideo(data);
         }
     })
     .error(function() {
@@ -322,6 +288,52 @@ angular.module('twitchcast.controllers', [])
     $scope.open = function (url) {
         window.open(url, '_system');
     };
+
+    function checkvideo(data) {
+        var id = data.api_id;
+        var auth = '';
+        if(Object.getOwnPropertyNames(data.restrictions).length > 0)
+            var restrict = true;
+        else
+            var restrict = false;
+
+        if(window.localStorage.getItem('access_token') != null)
+            auth = '&oauth_token=' + window.localStorage.getItem('access_token');
+
+        $http.jsonp('https://api.twitch.tv/api/vods/' + id.slice(1, id.length) + '/access_token?callback=JSON_CALLBACK' + auth)
+        .success(function(auth) {
+            var sig = auth.sig;
+            var token = auth.token;
+            var url = 'http://usher.twitch.tv/vod/' + id.slice(1, id.length) + '?nauth=' + token + '&nauthsig=' + sig;
+
+            $http.get(url)
+            .success(function(data) {
+                var dir = /http?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
+                var fmt = /NAME="(.*?)"/gi;
+                
+                $scope.type = 'vod';
+                $scope.fmt = data.match(fmt);
+                $scope.list = data.match(dir);
+                $scope.title = 'Select Quality';
+            })
+            .error(function() {
+                $scope.error = 'true';
+                $scope.title = 'Video Unavailable';
+                if(restrict)
+                    $scope.message = 'The video is restricted: You may need to subscribe';
+                else
+                    $scope.message = 'The video is unreachable: Please report this issue for suport';
+            });
+        })
+        .error(function() {
+            $scope.error = 'true';
+            $scope.title = 'Video Unavailable';
+            if(restrict)
+                    $scope.message = 'The video is restricted: You may need to subscribe';
+                else
+                    $scope.message = 'The video is unreachable: Please report this issue for suport';
+        });
+    }
 })
 .controller('highlights', function($scope, $stateParams, $http, $ionicScrollDelegate, URLservice) {
     $scope.reload = function (offset) {

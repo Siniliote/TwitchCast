@@ -32,7 +32,8 @@
                 </div>
                 <div ng-if="quality == 1" ng-repeat="item in _240p">
                     <a ng-if="item.url != null" ng-click="open(item.url)" href="" class="item item-icon-left">Part {{$index + 1}}</a>
-                </div>   
+                </div>
+                <br/><br/>
             </div>
         </div>
         <div ng-include="'src/views/error.html'"></div>
