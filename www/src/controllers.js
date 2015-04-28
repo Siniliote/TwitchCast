@@ -228,7 +228,7 @@ angular.module('twitchcast.controllers', [])
                 }
                 $scope.next = data._links.next;
                 $scope.prev = data._links.prev;
-                $scope.total = data._total;console.log(data._total);
+                $scope.total = data._total;
             }
             else {
                 $scope.error = 'true';
@@ -260,67 +260,24 @@ angular.module('twitchcast.controllers', [])
     });
 })
 .controller('video', function($scope, $stateParams, $http) { 
-    console.log('https://api.twitch.tv/api/videos/' + $stateParams.id + '?callback=JSON_CALLBACK');
     $http.jsonp('https://api.twitch.tv/api/videos/' + $stateParams.id + '?callback=JSON_CALLBACK')
     .success(function(data) {
-        if(data.api_id.slice(0, 1) != 'c') {
-            var id = data.api_id;
-            var auth = '';
-
-            if(window.localStorage.getItem('access_token') != null)
-                auth = '&oauth_token=' + window.localStorage.getItem('access_token');
-            
-            $http.jsonp('https://api.twitch.tv/api/vods/' + id.slice(1, id.length) + '/access_token?callback=JSON_CALLBACK' + auth)
-            .success(function(auth) {
-                var sig = auth.sig;
-                var token = auth.token;
-                var url = 'http://usher.twitch.tv/vod/' + id.slice(1, id.length) + '?nauth=' + token + '&nauthsig=' + sig;
-                url = 'http://tcweb.esy.es/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
-                
-                $http.jsonp(url)
-                .success(function(data) {
-                    if(data.m3u == "") {
-                        $scope.error = 'true';
-                        $scope.message = "The playlist is empty";
-                        $scope.title = 'Playlist Unavailable';
-                    }
-                    else {
-                        var dir = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
-                        var fmt = /NAME=_(.*?)_/gi;
-                        
-                        $scope.type = 'vod';
-                        $scope.fmt = data.m3u.match(fmt);
-                        $scope.list = data.m3u.match(dir);
-                        $scope.title = 'Select Quality';
-                    }
-                })
-                .error(function() {
-                    $scope.error = 'true';
-                    $scope.message = 'The video is restricted: You may need to subscribe';
-                    $scope.title = 'Video Unavailable';
-                });
-            })
-            .error(function() {
-                $scope.error = 'true';
-                $scope.message = 'The video is restricted: You may need to subscribe';
-                $scope.title = 'Video Unavailable';
-            });
+        if(typeof data.chunks.live !== 'undefined') {
+        	if(data.chunks.live.length > 0) {
+        		$scope.type = 'chunk';
+	            $scope._live = data.chunks.live;
+	            $scope._720p = data.chunks["720p"];
+	            $scope._480p = data.chunks["480p"];
+	            $scope._360p = data.chunks["360p"];
+	            $scope._240p = data.chunks["240p"];
+	            $scope.title = 'Select Quality';
+        	}
+        	else {
+        		checkvideo(data);
+        	}
         }
         else {
-            if(data.chunks.live.length > 0) {
-                $scope.type = 'chunk';
-                $scope._live = data.chunks.live;
-                $scope._720p = data.chunks["720p"];
-                $scope._480p = data.chunks["480p"];
-                $scope._360p = data.chunks["360p"];
-                $scope._240p = data.chunks["240p"];
-                $scope.title = 'Select Quality';
-            }
-            else {
-                $scope.error = 'true';
-                $scope.message = 'The video is restricted: You may need to subscribe';
-                $scope.title = 'Video Unavailable';
-            }
+			checkvideo(data);
         }
     })
     .error(function() {
@@ -333,6 +290,60 @@ angular.module('twitchcast.controllers', [])
     $scope.open = function (url) {
         window.open(url, '_system');
     };
+
+    function checkvideo(data) {
+    	var id = data.api_id;
+		var auth = '';
+		if(Object.getOwnPropertyNames(data.restrictions).length > 0)
+			var restrict = true;
+		else
+			var restrict = false;
+
+		if(window.localStorage.getItem('access_token') != null)
+		    auth = '&oauth_token=' + window.localStorage.getItem('access_token');
+
+		$http.jsonp('https://api.twitch.tv/api/vods/' + id.slice(1, id.length) + '/access_token?callback=JSON_CALLBACK' + auth)
+		.success(function(auth) {
+		    var sig = auth.sig;
+		    var token = auth.token;
+		    var url = 'http://usher.twitch.tv/vod/' + id.slice(1, id.length) + '?nauth=' + token + '&nauthsig=' + sig;
+		    url = 'http://tcweb.esy.es/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
+		    
+		    $http.jsonp(url)
+		    .success(function(data) {
+		        if(data.m3u == "") {
+		            $scope.error = 'true';
+		            $scope.message = "The playlist is empty";
+		            $scope.title = 'Playlist Unavailable';
+		        }
+		        else {
+		            var dir = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
+		            var fmt = /NAME=_(.*?)_/gi;
+		            
+		            $scope.type = 'vod';
+		            $scope.fmt = data.m3u.match(fmt);
+		            $scope.list = data.m3u.match(dir);
+		            $scope.title = 'Select Quality';
+		        }
+		    })
+		    .error(function() {
+		        $scope.error = 'true';
+		        $scope.title = 'Video Unavailable';
+		        if(restrict)
+		        	$scope.message = 'The video is restricted: You may need to subscribe';
+		        else
+		        	$scope.message = 'The video is unreachable: Please report this issue for suport';
+		    });
+		})
+		.error(function() {
+		    $scope.error = 'true';
+		    $scope.title = 'Video Unavailable';
+		    if(restrict)
+		        	$scope.message = 'The video is restricted: You may need to subscribe';
+		        else
+		        	$scope.message = 'The video is unreachable: Please report this issue for suport';
+		});
+    }
 })
 .controller('highlights', function($scope, $stateParams, $http, $ionicScrollDelegate, URLservice) {
     $scope.reload = function (offset) {
