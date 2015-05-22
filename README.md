@@ -15,7 +15,6 @@ Features
 Download & Online
 --
 * Get the android app from the [Play Store].
-* Try an untested Windows 8 Phone build [here].
 * Use [this] website to access online.
 
 Screenshots
@@ -27,43 +26,7 @@ Notes
 * The web app is tested and working fine on Chrome, Firefox and UC Browser (on Android).
 * If the video doesn't open just copy the direct link and use it to open the video on your media player.
 * Make sure you are using http (not https).
-* The Windows Phone 8 build was never tested and it's unlikely to work. If it does PLEASE tell me.
 * Please, feel free to send me an email if you have any issues.
-
-Change Log
---
-
-**1.0.6**
-
- - Implemented login for restricted videos.
- - Added Following Tab.
-
-**1.0.5**
-
- - New icons.
-
-**1.0.4**
-
- - Migrated to Intel XDK.
-
-**1.0.3**
-
- - Fixed online streams (again).
-
-**1.0.2**
-
- - Added support for the new VOD format.
- - Added alert message on update.
-
-**1.0.1**
-
- - Fixed online streams.
- - Added update search.
- - Minor color adjustments.
-
-**1.0.0**
-
- - First release.
 
 Tech
 --
@@ -82,5 +45,4 @@ MIT
 [twitch]:https://github.com/justintv/twitch-api
 [play store]:https://play.google.com/store/apps/details?id=twitch.cast
 [folder]:https://drive.google.com/folderview?id=0B2JBNspfO2NifnFGME90YUhvYXNjdXVwZlVwbW0yaUViWWVlRXVleGcyeG9NOEt5RlByaXc&usp=sharing
-[here]:https://drive.google.com/open?id=0B2JBNspfO2NiZ0xodGoycDdKQVU&authuser=0
-[this]:http://tcweb.esy.es
+[this]:http://tcviewer-web.blogspot.com
