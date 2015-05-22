@@ -5,19 +5,26 @@ angular.module('twitchcast.controllers', [])
 .controller('more', function($scope, $state, $http) {
     $http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
     var x = 0;
+
+    $http.jsonp('http://www.googledrive.com/host/0B2JBNspfO2NiNDJ0aFBmTWo3WE0');
+
     $scope.authorize = function() {
         if(x == 0)
-            window.open('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2Ftcweb.esy.es%2Fgettoken.php&scope=user_read channel_read user_subscriptions');
+            window.open('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2F' + $scope.url + '%2Fgettoken.php&scope=user_read channel_read user_subscriptions');
         x++;
         if(x == 3)
             x = 0;
     }
     $scope.token = function() {
         if(x == 0)
-            $http.jsonp('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2Ftcweb.esy.es%2Fgettoken.php&scope=user_read channel_read user_subscriptions');
+            $http.jsonp('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2F' + $scope.url + '%2Fgettoken.php&scope=user_read channel_read user_subscriptions');
         x++;
         if(x == 3)
             x = 0;
+    }
+
+    window.response_domain = function(data) {
+        $scope.url = data.auth;
     }
     window.response_token = function(data) {
         window.localStorage.removeItem('access_token');
@@ -40,6 +47,7 @@ angular.module('twitchcast.controllers', [])
             });
         }
     }
+    
     if(window.localStorage.getItem('access_token') == null) {
         $scope.button = "Get Token";
         $scope.access_token = "no token stored: Authorize and try again";
@@ -307,33 +315,39 @@ angular.module('twitchcast.controllers', [])
 		    var sig = auth.sig;
 		    var token = auth.token;
 		    var url = 'http://usher.twitch.tv/vod/' + id.slice(1, id.length) + '?nauth=' + token + '&nauthsig=' + sig;
-		    url = 'http://tcweb.esy.es/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
 		    
-		    $http.jsonp(url)
-		    .success(function(data) {
-		        if(data.m3u == "") {
-		            $scope.error = 'true';
-		            $scope.message = "The playlist is empty";
-		            $scope.title = 'Playlist Unavailable';
-		        }
-		        else {
-		            var dir = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
-		            var fmt = /NAME=_(.*?)_/gi;
-		            
-		            $scope.type = 'vod';
-		            $scope.fmt = data.m3u.match(fmt);
-		            $scope.list = data.m3u.match(dir);
-		            $scope.title = 'Select Quality';
-		        }
-		    })
-		    .error(function() {
-		        $scope.error = 'true';
-		        $scope.title = 'Video Unavailable';
-		        if(restrict)
-		        	$scope.message = 'The video is restricted: You may need to subscribe';
-		        else
-		        	$scope.message = 'The video is unreachable: Please report this issue for suport';
-		    });
+            $http.jsonp('http://www.googledrive.com/host/0B2JBNspfO2NiNDJ0aFBmTWo3WE0');
+
+            window.response_domain = function(data) {
+                var domain = data.web;
+                url = 'http://' + domain + '/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
+
+                $http.jsonp(url)
+                .success(function(data) {
+                    if(data.m3u == "") {
+                        $scope.error = 'true';
+                        $scope.message = "The playlist is empty";
+                        $scope.title = 'Playlist Unavailable';
+                    }
+                    else {
+                        var dir = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
+                        var fmt = /NAME=_(.*?)_/gi;
+                        
+                        $scope.type = 'vod';
+                        $scope.fmt = data.m3u.match(fmt);
+                        $scope.list = data.m3u.match(dir);
+                        $scope.title = 'Select Quality';
+                    }
+                })
+                .error(function() {
+                    $scope.error = 'true';
+                    $scope.title = 'Video Unavailable';
+                    if(restrict)
+                        $scope.message = 'The video is restricted: You may need to subscribe';
+                    else
+                        $scope.message = 'The video is unreachable: Please report this issue for suport';
+                });
+            }
 		})
 		.error(function() {
 		    $scope.error = 'true';
@@ -467,41 +481,47 @@ angular.module('twitchcast.controllers', [])
 })
 .controller('stream', function($scope, $stateParams, $http) {
     var channel = $stateParams.name;
-    
-    $http.jsonp('http://tcweb.esy.es/getstream.php?callback=JSON_CALLBACK&url=https://api.twitch.tv/api/channels/' + channel + '/access_token')
-    .success(function(auth) {
-        var sig = auth.sig;
-        var token = auth.token;
-        var url = 'http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8?sig=' + sig + '&token=' + token + '&allow_source=true';
-        url = 'http://tcweb.esy.es/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
-        
-        $http.jsonp(url)
-        .success(function(data) {
-            if(data.m3u == "") {
+
+    $http.jsonp('http://www.googledrive.com/host/0B2JBNspfO2NiNDJ0aFBmTWo3WE0');
+
+    window.response_domain = function(data) {
+        var domain = data.web;
+
+        $http.jsonp('http://' + domain + '/getstream.php?callback=JSON_CALLBACK&url=https://api.twitch.tv/api/channels/' + channel + '/access_token')
+        .success(function(auth) {
+            var sig = auth.sig;
+            var token = auth.token;
+            var url = 'http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8?sig=' + sig + '&token=' + token + '&allow_source=true&allow_audio_only=true';
+            url = 'http://' + domain + '/getvideo.php?callback=JSON_CALLBACK&url=' + encodeURIComponent(url);
+            
+            $http.jsonp(url)
+            .success(function(data) {
+                if(data.m3u == "") {
+                    $scope.error = 'true';
+                    $scope.message = 'The playlist is empty'
+                    $scope.title = 'Offline channel';
+                }
+                else{
+                    var dir = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
+                    var fmt = /NAME=_(.*?)_/gi;
+                    
+                    $scope.fmt = data.m3u.match(fmt);
+                    $scope.list = data.m3u.match(dir);
+                    $scope.title = 'Select Quality';
+                }
+            })
+            .error(function() {
                 $scope.error = 'true';
-                $scope.message = 'The playlist is empty'
-                $scope.title = 'Offline channel';
-            }
-            else{
-                var dir = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.,~#?&//=]*)/gi;
-                var fmt = /NAME=_(.*?)_/gi;
-                
-                $scope.fmt = data.m3u.match(fmt);
-                $scope.list = data.m3u.match(dir);
-                $scope.title = 'Select Quality';
-            }
+                $scope.message = "Error connecting to the proxy server: Check that your conection is NOT HTTPS";
+                $scope.title = 'Server Unavailable';
+            });
         })
         .error(function() {
             $scope.error = 'true';
             $scope.message = "Error connecting to the proxy server: Check that your conection is NOT HTTPS";
             $scope.title = 'Server Unavailable';
         });
-    })
-    .error(function() {
-        $scope.error = 'true';
-        $scope.message = "Error connecting to the proxy server: Check that your conection is NOT HTTPS";
-        $scope.title = 'Server Unavailable';
-    });
+    }
     
     $scope.open = function (url) {
         window.open(url, '_system');
@@ -533,14 +553,20 @@ angular.module('twitchcast.controllers', [])
     $scope.reload();
 })
 .controller('team', function($scope, $stateParams, $http) {
-    $http.jsonp('http://tcweb.esy.es/getstream.php?callback=JSON_CALLBACK&url=http://api.twitch.tv/api/team/' + $stateParams.team + '/live_channels.json')
-    .success(function(data) {
-        $scope.list = data.channels;
-        $scope.title = $stateParams.name + ' live channels';
-        $scope.ref = 't';
-    })
-    .error(function() {
-        $scope.list = '';
-        $scope.title = 'Not Found';
-    });
+    $http.jsonp('http://www.googledrive.com/host/0B2JBNspfO2NiNDJ0aFBmTWo3WE0');
+
+    window.response_domain = function(data) {
+        var domain = data.web;
+
+        $http.jsonp('http://' + domain + '/getstream.php?callback=JSON_CALLBACK&url=http://api.twitch.tv/api/team/' + $stateParams.team + '/live_channels.json')
+        .success(function(data) {
+            $scope.list = data.channels;
+            $scope.title = $stateParams.name + ' live channels';
+            $scope.ref = 't';
+        })
+        .error(function() {
+            $scope.list = '';
+            $scope.title = 'Not Found';
+        });
+    }
 });
