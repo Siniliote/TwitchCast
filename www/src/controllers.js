@@ -6,14 +6,18 @@ angular.module('twitchcast.controllers', [])
     $http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 
     $scope.authorize = function() {
-        var ref = window.open('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2Ftcweb.esy.es%2Fgettoken.php&scope=user_read channel_read user_subscriptions', '_blank', 'location=no');
-        ref.addEventListener('loadstart', function(event) {
-            if((event.url).indexOf('http://tcweb.esy.es/gettoken.php') > -1) {
-                $http.jsonp('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2Ftcweb.esy.es%2Fgettoken.php&scope=user_read channel_read user_subscriptions');
-                ref.close();
-            }
+        $http.get('http://www.googledrive.com/host/0B2JBNspfO2NidWdYbXlmTF9HQ1k')
+        .success(function(data) {
+            var url = data.domain;
+            var ref = window.open('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2F' + url + '%2Fgettoken.php&scope=user_read channel_read user_subscriptions', '_blank', 'location=no');
+                ref.addEventListener('loadstart', function(event) {
+                    if((event.url).indexOf('http://' + url + '/gettoken.php') > -1) {
+                        $http.jsonp('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2F' + url + '%2Fgettoken.php&scope=user_read channel_read user_subscriptions');
+                        ref.close();
+                    }
+                });
         });
-    }
+    };
     window.response_token = function(data) {
         window.localStorage.removeItem('access_token');
         window.localStorage.setItem('access_token', data.access_token);
@@ -34,7 +38,7 @@ angular.module('twitchcast.controllers', [])
                 window.localStorage.setItem('username', data.name);
             });
         }
-    }
+    };
     if(window.localStorage.getItem('access_token') == null) {
         $scope.button = "Authorize";
         $scope.access_token = "no token stored: Authorize and try again";
@@ -66,7 +70,7 @@ angular.module('twitchcast.controllers', [])
 
     $scope.goto = function (index) {
         $scope.$broadcast('slideBox.setSlide', index);
-    }
+    };
     $scope.slide = function (index) {
         if(index == 0)
             $scope.title = 'More';
@@ -259,8 +263,8 @@ angular.module('twitchcast.controllers', [])
 })
 .controller('video', function($scope, $stateParams, $http) { 
     $http.jsonp('https://api.twitch.tv/api/videos/' + $stateParams.id + '?callback=JSON_CALLBACK')
-    .success(function(data) {
-        if(typeof data.chunks.live !== 'undefined') {
+    .success(function(data) {        
+        if(typeof data.chunks.live !== undefined) {
             if(data.chunks.live.length > 0) {
                 $scope.type = 'chunk';
                 $scope._live = data.chunks.live;
@@ -462,7 +466,7 @@ angular.module('twitchcast.controllers', [])
     .success(function(auth) {
         var sig = auth.sig;
         var token = auth.token;
-        var url = 'http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8?sig=' + sig + '&token=' + token + '&allow_source=true';
+        var url = 'http://usher.twitch.tv/api/channel/hls/' + channel + '.m3u8?sig=' + sig + '&token=' + token + '&allow_source=true&allow_audio_only=true';
         
         $http.get(url)
         .success(function(data) {

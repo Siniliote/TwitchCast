@@ -60,8 +60,13 @@ angular.module('twitchcast.services', [])
                         timer.then(function() {
                             $http.jsonp(url)
                             .success(function(data) {
-                                if(data.error == null) {
-                                    $rootScope.badge = data._total;
+                                if(typeof data !== undefined) {
+                                    if(data.error !== null) {
+                                        $rootScope.badge = data._total;
+                                    }
+                                    else {
+                                        $rootScope.badge = 0;
+                                    }
                                 }
                                 else {
                                     $rootScope.badge = 0;
@@ -70,7 +75,7 @@ angular.module('twitchcast.services', [])
                             .error(function() {
                                 $rootScope.badge = 0;
                             });
-                            myLoop()
+                            myLoop();
                         },
                         function(){
                             $rootScope.badge = 0;
