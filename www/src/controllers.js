@@ -316,7 +316,7 @@ angular.module('twitchcast.controllers', [])
 		    var token = auth.token;
 		    var url = 'http://usher.twitch.tv/vod/' + id.slice(1, id.length) + '?nauth=' + token + '&nauthsig=' + sig;
 		    
-            $http.jsonp('http://www.googledrive.com/host/0B2JBNspfO2NiNDJ0aFBmTWo3WE0');
+            $http.jsonp('https://www.googledrive.com/host/0B2JBNspfO2NiNDJ0aFBmTWo3WE0');
 
             window.response_domain = function(data) {
                 var domain = data.web;
@@ -482,7 +482,7 @@ angular.module('twitchcast.controllers', [])
 .controller('stream', function($scope, $stateParams, $http) {
     var channel = $stateParams.name;
 
-    $http.jsonp('http://www.googledrive.com/host/0B2JBNspfO2NiNDJ0aFBmTWo3WE0');
+    $http.jsonp('https://www.googledrive.com/host/0B2JBNspfO2NiNDJ0aFBmTWo3WE0');
 
     window.response_domain = function(data) {
         var domain = data.web;
