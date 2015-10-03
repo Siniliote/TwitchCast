@@ -91,7 +91,7 @@ angular.module('twitchcast.controllers', [])
             $scope.title = 'Search';
     };
     $scope.slide();
-    $scope.default = 1;
+    $scope.default_slide = 1;
 })
 .controller('games', function($scope, $stateParams, $http, $ionicScrollDelegate, URLservice) {
     $scope.reload = function (offset) {
