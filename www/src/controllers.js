@@ -6,17 +6,14 @@ angular.module('twitchcast.controllers', [])
     $http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 
     $scope.authorize = function() {
-        $http.get('https://www.googledrive.com/host/0B2JBNspfO2NidWdYbXlmTF9HQ1k')
-        .success(function(data) {
-            var url = data.domain;
-            var ref = window.open('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2F' + url + '%2Fgettoken.php&scope=user_read channel_read user_subscriptions', '_blank', 'location=no');
-                ref.addEventListener('loadstart', function(event) {
-                    if((event.url).indexOf('http://' + url + '/gettoken.php') > -1) {
-                        $http.jsonp('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=http%3A%2F%2F' + url + '%2Fgettoken.php&scope=user_read channel_read user_subscriptions');
-                        ref.close();
-                    }
-                });
-        });
+        var url = data.domain;
+        var ref = window.open('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=https%3A%2F%2Fxtv-arxk.rhcloud.com%2Ftwitch%2Fauth&scope=user_read channel_read user_subscriptions', '_blank', 'location=no');
+            ref.addEventListener('loadstart', function(event) {
+                if((event.url).indexOf('https://xtv-arxk.rhcloud.com/twitch/auth') > -1) {
+                    $http.jsonp('https://api.twitch.tv/kraken/oauth2/authorize?response_type=code&client_id=4uql2fe563zxgyljb7pukft0ixaa0h7&redirect_uri=https%3A%2F%2Fxtv-arxk.rhcloud.com%2Ftwitch%2Fauth&scope=user_read channel_read user_subscriptions');
+                    ref.close();
+                }
+            });
     };
     window.response_token = function(data) {
         window.localStorage.removeItem('access_token');
