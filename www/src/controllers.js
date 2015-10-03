@@ -6,7 +6,7 @@ angular.module('twitchcast.controllers', [])
     $http.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
     var x = 0;
 
-    $http.jsonp('http://www.googledrive.com/host/0B2JBNspfO2NiNDJ0aFBmTWo3WE0');
+    $http.jsonp('https://www.googledrive.com/host/0B2JBNspfO2NiNDJ0aFBmTWo3WE0');
 
     $scope.authorize = function() {
         if(x == 0)
